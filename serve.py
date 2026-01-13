@@ -1,32 +1,31 @@
-#!/usr/bin/env python
-from typing import List
-
-from fastapi import FastAPI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI
-from langserve import add_routes
 from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.output_parsers import  StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from fastapi import FastAPI
+from langserve import add_routes
+
 load_dotenv()
 
-system_template = "Translate the following into {language}:"
-prompt_template = ChatPromptTemplate.from_messages([
-    ('system', system_template),
-    ('user', '{text}')
-])
+model = ChatOpenAI(model="gpt-4", temperature=0.1)
 
-model = ChatOpenAI()
+system_prompt = "Translate the following into {language}"
+prompt_template = ChatPromptTemplate.from_messages(
+    [
+        ("system", system_prompt), ("user", "{text}")
+    ]
+)
 
 parser = StrOutputParser()
 
-chain = prompt_template | model | parser
+chain =  prompt_template | model | parser
 
 app = FastAPI(
-  title="LangChain Server",
-  version="1.0",
-  description="A simple API server using LangChain's Runnable interfaces",
+    title="Translate app",
+    description="Translate the languages",
+    version="0.1.0",
 )
-
 
 add_routes(
     app,
@@ -36,4 +35,4 @@ add_routes(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
